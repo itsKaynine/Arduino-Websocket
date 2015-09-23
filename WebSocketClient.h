@@ -1,5 +1,6 @@
 /*
 Websocket-Arduino, a websocket implementation for Arduino
+Copyright 2015 Punnawut Khowkittipaiboon
 
 Based on previous implementations by
 Copyright 2011 Per Ejeklint
