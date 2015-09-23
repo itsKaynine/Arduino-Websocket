@@ -1,8 +1,9 @@
 /*
 Websocket-Arduino, a websocket implementation for Arduino
-Copyright 2011 Per Ejeklint
 
 Based on previous implementations by
+Copyright 2011 Per Ejeklint
+and
 Copyright 2010 Ben Swanson
 and
 Copyright 2010 Randall Brewer
@@ -45,7 +46,6 @@ http://tools.ietf.org/html/draft-hixie-thewebsocketprotocol-75
 
 #include <Arduino.h>
 #include <Stream.h>
-#include "String.h"
 #include "Client.h"
 
 // CRLF characters to terminate lines/handshakes in headers.
@@ -91,18 +91,18 @@ public:
     bool handshake(Client &client);
     
     // Get data off of the stream
-    bool getData(String& data, uint8_t *opcode = NULL);
+    bool getData(char *data, uint8_t *opcode = NULL);
 
     // Write data to the stream
-    void sendData(const char *str, uint8_t opcode = WS_OPCODE_TEXT);
-    void sendData(String str, uint8_t opcode = WS_OPCODE_TEXT);
+    void sendData(char *data, uint8_t opcode = WS_OPCODE_TEXT);
+    //void sendData(String str, uint8_t opcode = WS_OPCODE_TEXT);
 
     char *path;
     char *host;
     char *protocol;
 
 private:
-    Client *socket_client;
+    Client *socketClient;
     unsigned long _startMillis;
 
     const char *socket_urlPrefix;
@@ -111,15 +111,15 @@ private:
     // websocket connection.
     bool analyzeRequest();
 
-    bool handleStream(String& data, uint8_t *opcode);    
+    bool handleStream(char *data, uint8_t *opcode);    
     
     // Disconnect user gracefully.
     void disconnectStream();
     
     int timedRead();
 
-    void sendEncodedData(char *str, uint8_t opcode);
-    void sendEncodedData(String str, uint8_t opcode);
+    void sendEncodedData(char *data, uint8_t opcode);
+    //void sendEncodedData(String str, uint8_t opcode);
 };
 
 

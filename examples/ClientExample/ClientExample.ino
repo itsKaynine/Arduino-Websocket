@@ -1,6 +1,5 @@
 #include <SPI.h>
-#include <SC16IS750.h>
-#include <WiFly.h>
+#include <Ethernet.h>
 
 // Here we define a maximum framelength to 64 bytes. Default is 256.
 #define MAX_FRAME_LENGTH 64
@@ -8,48 +7,34 @@
 // Define how many callback functions you have. Default is 1.
 #define CALLBACK_FUNCTIONS 1
 
+#define BUFFER_SIZE 256
+
 #include <WebSocketClient.h>
 
-WiFlyClient client = WiFlyClient();
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+IPAddress ip(192, 168, 0, 177);
+
+EthernetClient client;
 WebSocketClient webSocketClient;
 
 void setup() {
   
-
+  // Open serial communications and wait for port to open:
   Serial.begin(9600);
-  SC16IS750.begin();
-  
-  WiFly.setUart(&SC16IS750);
-  
-  WiFly.begin();
-  
-  // This is for an unsecured network
-  // For a WPA1/2 network use auth 3, and in another command send 'set wlan phrase PASSWORD'
-  // For a WEP network use auth 2, and in another command send 'set wlan key KEY'
-  WiFly.sendCommand(F("set wlan auth 1"));
-  WiFly.sendCommand(F("set wlan channel 0"));
-  WiFly.sendCommand(F("set ip dhcp 1"));
-  
-  Serial.println(F("Joining WiFi network..."));
-  
-
-  // Here is where you set the network name to join
-  if (!WiFly.sendCommand(F("join arduino_wifi"), "Associated!", 20000, false)) {    
-    Serial.println(F("Association failed."));
-    while (1) {
-      // Hang on failure.
-    }
-  }
-  
-  if (!WiFly.waitForResponse("DHCP in", 10000)) {  
-    Serial.println(F("DHCP failed."));
-    while (1) {
-      // Hang on failure.
-    }
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for Leonardo only
   }
 
-  // This is how you get the local IP as an IPAddress object
-  Serial.println(WiFly.localIP());
+  // start the Ethernet connection:
+  if (Ethernet.begin(mac) == 0) {
+    Serial.println("Failed to configure Ethernet using DHCP");
+    // no point in carrying on, so do nothing forevermore:
+    // try to congifure using IP address instead of DHCP:
+    Ethernet.begin(mac, ip);
+  }
+  // give the Ethernet shield a second to initialize:
+  delay(1000);
+  Serial.println("connecting...");
   
   // This delay is needed to let the WiFly respond properly
   delay(100);
@@ -79,20 +64,18 @@ void setup() {
 }
 
 void loop() {
-  String data;
-  
   if (client.connected()) {
-    
-    data = webSocketClient.getData();
 
-    if (data.length() > 0) {
+    char data[BUFFER_SIZE];
+
+    if (webSocketClient.getData(data)) {
       Serial.print("Received data: ");
       Serial.println(data);
     }
     
     // capture the value of analog 1, send it along
     pinMode(1, INPUT);
-    data = String(analogRead(1));
+    sprintf(data, "value is %d", analogRead(1));
     
     webSocketClient.sendData(data);
     
